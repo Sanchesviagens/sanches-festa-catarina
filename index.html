@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memórias da Catarina 🍎</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 14px;
+  background: #fff7f4;
+  color: #64212a;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+main { max-width: 480px; margin: auto; }
+h1 { color: #c92738; font-size: 32px; margin-bottom: 8px; }
+p { line-height: 1.5; }
+.apple { font-size: 42px; }
+.frame {
+  position: relative;
+  margin: 20px auto;
+  padding: 8px;
+  background: white;
+  border: 5px solid #d73545;
+  border-radius: 22px;
+  box-shadow: 0 5px 18px #9d243522;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #f8e5e2;
+}
+video {
+  width: 100%;
+  border-radius: 12px;
+  display: none;
+  background: #f8e5e2;
+}
+button, .save {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 15px;
+  margin: 11px 0;
+  background: #c92738;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+}
+button:disabled { opacity: .45; cursor: default; }
+.secondary { background: #782b37; }
+.save { background: #287747; }
+#status { min-height: 24px; font-size: 14px; }
+footer { margin-top: 25px; font-size: 13px; color: #8c5258; }
+</style>
+</head>
+<body>
+<main>
+  <div class="apple">🍎 ❤️ 🍎</div>
+  <h1>Memórias da Catarina</h1>
+  <p>Vamos guardar uma lembrança especial deste dia!</p>
+  <p><strong>21 de novembro de 2026</strong></p>
+
+  <div class="frame">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="photo" width="720" height="900"></canvas>
+  </div>
+
+  <button id="start">📸 Abrir câmera</button>
+  <button id="take" disabled>❤️ Tirar foto</button>
+  <button id="again" class="secondary" disabled>Tirar outra foto</button>
+  <a id="save" class="save" hidden>⬇️ Salvar minha foto</a>
+  <p id="status" role="status">Toque em “Abrir câmera” para começar.</p>
+
+  <footer>Uma lembrança doce da festa da Catarina 🍎</footer>
+</main>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('photo');
+const ctx = canvas.getContext('2d');
+const start = document.getElementById('start');
+const take = document.getElementById('take');
+const again = document.getElementById('again');
+const save = document.getElementById('save');
+const status = document.getElementById('status');
+let stream = null;
+let captured = false;
+
+function drawWelcome() {
+  ctx.fillStyle = '#fff0eb';
+  ctx.fillRect(0, 0, 720, 900);
+  ctx.textAlign = 'center';
+  ctx.font = '70px Arial';
+  ctx.fillText('🍎 ❤️ 🍎', 360, 250);
+  ctx.fillStyle = '#c92738';
+  ctx.font = 'bold 48px Arial';
+  ctx.fillText('Catarina', 360, 370);
+  ctx.font = '30px Arial';
+  ctx.fillStyle = '#782b37';
+  ctx.fillText('Uma lembrança especial', 360, 435);
+  ctx.fillText('21.11.2026', 360, 490);
+  ctx.strokeStyle = '#d73545';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(18, 18, 684, 864);
+  ctx.font = '45px Arial';
+  ctx.fillText('🍎', 65, 85);
+  ctx.fillText('🍎', 655, 85);
+  ctx.fillText('🍎', 65, 850);
+  ctx.fillText('🍎', 655, 850);
+}
+drawWelcome();
+
+start.addEventListener('click', async () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    status.textContent = 'Abra este site pelo endereço HTTPS para usar a câmera.';
+    return;
+  }
+  start.disabled = true;
+  status.textContent = 'Solicitando acesso à câmera...';
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user' },
+      audio: false
+    });
+    video.srcObject = stream;
+    video.style.display = 'block';
+    canvas.style.display = 'none';
+    await video.play();
+    take.disabled = false;
+    status.textContent = 'Câmera pronta! Prepare o sorriso ❤️';
+  } catch (e) {
+    status.textContent = 'Não foi possível abrir a câmera. Autorize o acesso nas permissões do navegador e tente novamente.';
+    start.disabled = false;
+  }
+});
+
+take.addEventListener('click', () => {
+  if (!video.videoWidth) {
+    status.textContent = 'Aguarde a câmera carregar.';
+    return;
+  }
+  const w = canvas.width, h = canvas.height;
+  const scale = Math.max(w / video.videoWidth, h / video.videoHeight);
+  const sw = w / scale, sh = h / scale;
+  const sx = (video.videoWidth - sw) / 2;
+  const sy = (video.videoHeight - sh) / 2;
+
+  ctx.save();
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+  ctx.restore();
+
+  ctx.strokeStyle = '#d73545';
+  ctx.lineWidth = 16;
+  ctx.strokeRect(10, 10, w - 20, h - 20);
+  ctx.fillStyle = 'rgba(255,247,244,0.92)';
+  ctx.fillRect(18, h - 105, w - 36, 85);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c92738';
+  ctx.font = 'bold 34px Arial';
+  ctx.fillText('🍎 Catarina • 21.11.2026 🍎', w / 2, h - 52);
+
+  video.style.display = 'none';
+  canvas.style.display = 'block';
+  save.href = canvas.toDataURL('image/png');
+  save.download = 'lembranca-catarina.png';
+  save.hidden = false;
+  take.disabled = true;
+  again.disabled = false;
+  captured = true;
+  status.textContent = 'Foto pronta! Toque em “Salvar minha foto”.';
+});
+
+again.addEventListener('click', () => {
+  canvas.style.display = 'none';
+  video.style.display = 'block';
+  save.hidden = true;
+  take.disabled = false;
+  again.disabled = true;
+  captured = false;
+  status.textContent = 'Vamos tirar outra foto! ❤️';
+});
+
+window.addEventListener('pagehide', () => {
+  if (stream) stream.getTracks().forEach(track => track.stop());
+});
+</script>
+</body>
+</html>
