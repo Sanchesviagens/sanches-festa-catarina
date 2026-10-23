@@ -21,7 +21,7 @@ p { line-height: 1.5; }
 #stage {
   position: relative;
   width: min(100%, 400px);
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 2 / 3;
   margin: 18px auto;
   overflow: hidden;
   background: #ead8c5;
@@ -123,8 +123,8 @@ take.onclick = async () => {
   }
 
   const canvas = document.createElement('canvas');
-  canvas.width = 1200;
-  canvas.height = 800;
+  canvas.width = 800;
+  canvas.height = 1200;
   const ctx = canvas.getContext('2d');
 
   const scale = Math.max(
